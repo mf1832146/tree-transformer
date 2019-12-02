@@ -38,7 +38,16 @@ code summary
  
     * CNN encoder:
         using CNN as an encoder {Suggesting accurate method and class names}
- 
+
+RL+Hybrid2Seq:
+1. motivations: 
+    * the structure information of code is ignored
+    * traditional maximum likehood based methods suffer from the exposure bias issue.
+2. contributions
+    * use an AST-based LSTM to catch the structual information and an sequencial LSTM to deal with the code sequence. 
+    * use an hybrid attention layer to fuse the two representations
+    * use the deep reinforcement learning to deal with the exposure bias issue.
+    
  
  
  
