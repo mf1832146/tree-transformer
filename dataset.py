@@ -1,13 +1,13 @@
-from torch.utils.data import Dataset
+from torch.utils.data import Dataset, DataLoader
 from data_pre_process import load
 
 
 class TreeDataSet(Dataset):
-    def __init__(self, data_dir):
+    def __init__(self, data_dir, max_size):
         print('Loading data...')
-        code, parent_matrix, brother_matrix, rel_par_ids, rel_bro_ids, comments = load(data_dir)
+        code, parent_matrix, brother_matrix, rel_par_ids, rel_bro_ids, comments = load(data_dir, max_size)
         self.code = code
-        self.par_matrix = parent_matrix.view()
+        self.par_matrix = parent_matrix
         self.bro_matrix = brother_matrix
         self.rel_par_ids = rel_bro_ids
         self.rel_bro_ids = rel_bro_ids
@@ -22,5 +22,11 @@ class TreeDataSet(Dataset):
         return self.len
 
 
-    if __name__ == '__main__':
-        data_set = TreeDataSet('')
+if __name__ == '__main__':
+    data_set = TreeDataSet('./data/tree/train/', max_size=100)
+    train_loader2 = DataLoader(dataset=data_set,
+                               batch_size=32,
+                               shuffle=True)
+    for i, data in enumerate(train_loader2):
+        code, par_matrix, bro_matrix, rel_par_ids, rel_bro_ids, comm = data
+        print(code.shape[0])

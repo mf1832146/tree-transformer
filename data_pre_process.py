@@ -77,33 +77,35 @@ def deal_with_tree(data_dir, max_size, k, max_comment_size):
     relative_parent_ids_data = []
     relative_brother_ids_data = []
     comments = []
+    try:
+        for file in tqdm(files, "traverse tree data from {}".format(data_dir)):
+            tree, nl = parse(file)
 
-    for file in tqdm(files, "traverse tree data from {}".format(data_dir)):
-        tree, nl = parse(file)
+            nl = clean_nl(nl)
+            if is_invalid_com(nl):
+                skip += 1
+                continue
+            if is_invalid_tree(tree):
+                skip += 1
+                continue
+            seq = tokenize(nl)
+            if is_invalid_seq(seq):
+                skip += 1
+                continue
+            tree = rebuild_tree(tree, code_dic)
+            code_seq, parent_matrix, brother_matrix, parent_ids, brother_ids, relative_parent_ids, relative_brother_ids = traverse(tree, max_size, k)
 
-        nl = clean_nl(nl)
-        if is_invalid_com(nl):
-            skip += 1
-            continue
-        if is_invalid_tree(tree):
-            skip += 1
-            continue
-        seq = tokenize(nl)
-        if is_invalid_seq(seq):
-            skip += 1
-            continue
-        tree = rebuild_tree(tree, code_dic)
-        code_seq, parent_matrix, brother_matrix, parent_ids, brother_ids, relative_parent_ids, relative_brother_ids = traverse(tree, max_size, k)
-
-        code_data.append(code_seq)
-        parent_matrix_data.append(parent_matrix)
-        brother_matrix_data.append(brother_matrix)
-        parent_ids_data.append(parent_ids)
-        brother_ids_data.append(brother_ids)
-        relative_parent_ids_data.append(relative_parent_ids)
-        relative_brother_ids_data.append(relative_brother_ids)
-        seq_tensor = convert_comment_to_ids(seq, comment_dic, max_comment_size)
-        comments.append(seq_tensor)
+            code_data.append(code_seq)
+            parent_matrix_data.append(parent_matrix)
+            brother_matrix_data.append(brother_matrix)
+            parent_ids_data.append(parent_ids)
+            brother_ids_data.append(brother_ids)
+            relative_parent_ids_data.append(relative_parent_ids)
+            relative_brother_ids_data.append(relative_brother_ids)
+            seq_tensor = convert_comment_to_ids(seq, comment_dic, max_comment_size)
+            comments.append(seq_tensor)
+    except KeyboardInterrupt as e:
+        raise
 
     code_tensor = torch.stack(code_data, dim=0)
     parent_matrix_tensor = torch.stack(parent_matrix_data, dim=0).view(-1, max_size * max_size)
@@ -130,22 +132,24 @@ def generate_vocab(path):
 
     nls = {}
     skip = 0
+    try:
+        for file in tqdm(files, "generate vocab from {}".format(path)):
+            tree, nl = parse(file)
+            nl = clean_nl(nl)
+            if is_invalid_com(nl):
+                skip += 1
+                continue
+            if is_invalid_tree(tree):
+                skip += 1
+                continue
+            seq = tokenize(nl)
+            if is_invalid_seq(seq):
+                skip += 1
+                continue
 
-    for file in tqdm(files, "generate vocab from {}".format(path)):
-        tree, nl = parse(file)
-        nl = clean_nl(nl)
-        if is_invalid_com(nl):
-            skip += 1
-            continue
-        if is_invalid_tree(tree):
-            skip += 1
-            continue
-        seq = tokenize(nl)
-        if is_invalid_seq(seq):
-            skip += 1
-            continue
-
-        nls[tree] = seq
+            nls[tree] = seq
+    except Exception:
+        raise
 
     "comment vocab"
     comment_vocab = Counter([x for l in nls.values() for x in l])
