@@ -77,8 +77,9 @@ def deal_with_tree(data_dir, max_size, k, max_comment_size):
     relative_parent_ids_data = []
     relative_brother_ids_data = []
     comments = []
-    try:
-        for file in tqdm(files, "traverse tree data from {}".format(data_dir)):
+
+    for file in tqdm(files, "traverse tree data from {}".format(data_dir)):
+        try:
             tree, nl = parse(file)
 
             nl = clean_nl(nl)
@@ -104,8 +105,8 @@ def deal_with_tree(data_dir, max_size, k, max_comment_size):
             relative_brother_ids_data.append(relative_brother_ids)
             seq_tensor = convert_comment_to_ids(seq, comment_dic, max_comment_size)
             comments.append(seq_tensor)
-    except KeyboardInterrupt as e:
-        raise
+        except KeyboardInterrupt as e:
+            raise
 
     code_tensor = torch.stack(code_data, dim=0)
     parent_matrix_tensor = torch.stack(parent_matrix_data, dim=0).view(-1, max_size * max_size)
@@ -132,8 +133,9 @@ def generate_vocab(path):
 
     nls = {}
     skip = 0
-    try:
-        for file in tqdm(files, "generate vocab from {}".format(path)):
+
+    for file in tqdm(files, "generate vocab from {}".format(path)):
+        try:
             tree, nl = parse(file)
             nl = clean_nl(nl)
             if is_invalid_com(nl):
@@ -148,8 +150,8 @@ def generate_vocab(path):
                 continue
 
             nls[tree] = seq
-    except Exception:
-        raise
+        except Exception:
+            raise
 
     "comment vocab"
     comment_vocab = Counter([x for l in nls.values() for x in l])
