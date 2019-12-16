@@ -2,7 +2,7 @@ import os
 import sys
 from glob import glob
 from tqdm import tqdm
-from utils import Node, traverse_label, rebuild_tree
+from utils import Node, traverse_label, rebuild_tree, load_txt
 import nltk
 import re
 from collections import Counter
@@ -50,6 +50,17 @@ def pre_process():
         save_to_file(relative_parent_ids_tensor, save_path + 'relative_parents.txt')
         save_to_file(relative_brother_ids_tensor, save_path + 'relative_brothers.txt')
         save_to_file(comments_tensor, save_path + 'comments.txt')
+
+
+def load(save_path, max_size):
+    code = load_txt(save_path + 'code.txt')
+    parent_matrix = load_txt(save_path + 'parent_matrix.txt').view(-1, max_size, max_size)
+    brother_matrix = load_txt(save_path + 'brother_matrix.txt').view(-1, max_size, max_size)
+    rel_par_ids = load_txt(save_path + 'relative_parents.txt').view(-1, max_size, max_size)
+    rel_bro_ids = load_txt(save_path + 'relative_brothers.txt').view(-1, max_size, max_size)
+    comments = load_txt(save_path + 'comments.txt')
+
+    return code, parent_matrix, brother_matrix, rel_par_ids, rel_bro_ids, comments
 
 
 def deal_with_tree(data_dir, max_size, k, max_comment_size):
@@ -245,7 +256,7 @@ def is_invalid_tree(root):
     labels = traverse_label(root)
     if root.label == 'root (ConstructorDeclaration)':
         return True
-    if len(labels) >= 100:
+    if len(labels) >= 1000:
         return True
     method_name = get_method_name(root)
     for word in ["test", "Test", "set", "Set", "get", "Get"]:
@@ -257,6 +268,8 @@ def is_invalid_tree(root):
 def convert_comment_to_ids(comment, dic, max_len):
     nl = torch.zeros(max_len)
     for i, word in enumerate(comment):
+        if i >= max_len:
+            break
         if word not in dic:
             nl[i] = dic['<UNK>']
         else:
@@ -292,15 +305,21 @@ def traverse(tree, max_size, k):
     while queue:
         current_node = queue.pop()
         node_id = current_node.num
+
+        if node_id >= max_size:
+            continue
+
         seq[node_id] = current_node.label
         if node_id == root_id:
             parent_map[node_id] = [node_id]
             brother_map[node_id] = [node_id]
 
         if len(current_node.children) > 0:
-            brother_node_ids = [x.num for x in current_node.children]
+            brother_node_ids = [x.num for x in current_node.children if x.num < max_size]
             for child in current_node.children:
                 child_id = child.num
+                if child_id >= max_size:
+                    continue
 
                 parent_map[child_id] = parent_map[node_id] + [child_id]
                 brother_map[child_id] = brother_node_ids
@@ -311,7 +330,8 @@ def traverse(tree, max_size, k):
         for parent_id in parent_map[node_id]:
             parent_matrix[node_id][parent_id] = 0
             parent_matrix[parent_id][node_id] = 0
-        brother_matrix[node_id][brother_map[node_id]] = 0
+        for brother_id in brother_map[node_id]:
+            brother_matrix[node_id][brother_id] = 0
         # 位置顺序
         parent_ids[node_id] = parent_map[node_id].index(node_id) + 1
         brother_ids[node_id] = brother_map[node_id].index(node_id) + 1
