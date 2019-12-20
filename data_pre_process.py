@@ -54,11 +54,17 @@ def pre_process():
 
 def load(save_path, max_size):
     code = load_txt(save_path + 'code.txt')
+    print('loading code finished')
     parent_matrix = load_txt(save_path + 'parent_matrix.txt').view(-1, max_size, max_size)
+    print('loading parent_matrix finished')
     brother_matrix = load_txt(save_path + 'brother_matrix.txt').view(-1, max_size, max_size)
+    print('loading brother_matrix finished')
     rel_par_ids = load_txt(save_path + 'relative_parents.txt').view(-1, max_size, max_size)
+    print('loading rel_par_ids finished')
     rel_bro_ids = load_txt(save_path + 'relative_brothers.txt').view(-1, max_size, max_size)
+    print('loading rel_bro_ids finished')
     comments = load_txt(save_path + 'comments.txt')
+    print('loading comments finished')
 
     return code, parent_matrix, brother_matrix, rel_par_ids, rel_bro_ids, comments
 
