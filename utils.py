@@ -1,6 +1,7 @@
 import re
 import numpy as np
 import torch
+import os
 
 
 def load_txt(file_path):
@@ -9,6 +10,19 @@ def load_txt(file_path):
     if torch.cuda.is_available():
         data = data.cuda()
     return data
+
+
+def make_save_dir(save_dir):
+    if not os.path.exists(save_dir):
+        os.makedirs(save_dir)
+    return save_dir
+
+
+def subsequent_mask(size):
+    "Mask out subsequent positions."
+    attn_shape = (1, size, size)
+    subsequent_mask = np.triu(np.ones(attn_shape), k=1).astype('uint8')
+    return torch.from_numpy(subsequent_mask) == 0
 
 
 def remove_simple_name(root):
