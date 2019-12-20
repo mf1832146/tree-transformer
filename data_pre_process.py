@@ -182,7 +182,7 @@ def generate_vocab(path):
             code_labels, "collect values")] if y is not None])
     values_list = [x[0] for x in values.most_common(1000)]
 
-    vocab = ["<UNK>", "SimpleName_<UNK>", "Value_<NUM>", "Value_<STR>"]
+    vocab = ["<PAD>", "<UNK>", "SimpleName_<UNK>", "Value_<NUM>", "Value_<STR>"]
     vocab += non_terminals + ids_list + values_list + ["(", ")"]
 
     code_i2w = {i: w for i, w in enumerate(vocab)}
