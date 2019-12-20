@@ -7,8 +7,8 @@ import os
 def load_txt(file_path):
     data = np.loadtxt(file_path, dtype=np.int32)
     data = torch.from_numpy(data)
-    if torch.cuda.is_available():
-        data = data.cuda()
+    # if torch.cuda.is_available():
+    #     data = data.cuda()
     return data
 
 

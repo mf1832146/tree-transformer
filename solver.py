@@ -121,6 +121,16 @@ class Batch:
                  re_bro_ids,
                  comments=None,
                  pad=0):
+        # 加载入gpu
+        if torch.cuda.is_available():
+            code = code.cuda()
+            par_matrix = par_matrix.cuda()
+            bro_matrix = bro_matrix.cuda()
+            re_par_ids = re_par_ids.cuda()
+            re_bro_ids = re_bro_ids.cuda()
+            if comments is not None:
+                comments = comments.cuda()
+
         self.code = code
         # code_mask用于解码时用
         self.code_mask = (code != pad).unsqueeze(-2)
