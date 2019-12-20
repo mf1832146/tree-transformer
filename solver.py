@@ -1,7 +1,6 @@
 from torch.autograd import Variable
 from torch.utils.data import DataLoader
 
-from bert_optimizer import BertAdam
 from dataset import TreeDataSet
 from utils import make_save_dir
 import os
@@ -69,19 +68,23 @@ class Solver:
         loss_compute = SimpleLossCompute(self.model.generator, criterion, optim)
 
         total_loss = []
-        start = time.time()
-        total_step_time = 0.
 
         for step in range(self.args.num_step):
             train_loader = DataLoader(dataset=data_set, batch_size=self.args.batch_size, shuffle=True)
             self.model.train()
-            run_epoch(train_loader, self.model, loss_compute)
 
+            start = time.time()
+            step_loss = run_epoch(train_loader, self.model, loss_compute)
+            elapsed = time.time() - start
+            print('----------epoch: %d end, total loss= %f , train_time= %f Sec -------------' % (step, step_loss, elapsed))
+            total_loss.append(step_loss)
             print('saving!!!!')
 
             model_name = 'model.pth'
             state = {'epoch': epoch, 'state_dict': self.model.state_dict()}
             torch.save(state, os.path.join(self.model_dir, model_name))
+
+        print('training process end, total_loss is =', total_loss)
 
 
 def run_epoch(epoch, data_iter, model, loss_compute):
