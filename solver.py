@@ -93,7 +93,8 @@ def run_epoch(epoch, data_iter, model, loss_compute):
     total_loss = 0
     tokens = 0
     for i, data_batch in enumerate(data_iter):
-        batch = Batch(data_batch)
+        code, par_matrix, bro_matrix, rel_par_ids, rel_bro_ids, comments = data_batch
+        batch = Batch(code, par_matrix, bro_matrix, rel_par_ids, rel_bro_ids, comments)
         # batch = data_batch
         out, _, _, _ = model.forward(batch.code, batch.code_mask,
                                      batch.par_matrix, batch.bro_matrix,
