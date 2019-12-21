@@ -42,7 +42,9 @@ class Solver:
             if p.dim() > 1:
                 nn.init.xavier_uniform(p)
 
-        return model.cuda() if torch.cuda.is_available else model
+        if torch.cuda.is_available:
+            model = model.cuda()
+        return model
 
     def train(self):
         if self.args.load:
@@ -81,7 +83,7 @@ class Solver:
             print('saving!!!!')
 
             model_name = 'model.pth'
-            state = {'epoch': epoch, 'state_dict': self.model.state_dict()}
+            state = {'epoch': step, 'state_dict': self.model.state_dict()}
             torch.save(state, os.path.join(self.model_dir, model_name))
 
         print('training process end, total_loss is =', total_loss)
@@ -228,7 +230,8 @@ class SimpleLossCompute:
         loss.backward()
         if self.opt is not None:
             self.opt.step()
-            self.opt.optimizer.zero_grad()
+            # self.opt.optimizer.zero_grad()
+            self.opt.zero_grad()
         return (loss * norm).item()
 
 
