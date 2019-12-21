@@ -74,7 +74,7 @@ class Solver:
             self.model.train()
 
             start = time.time()
-            step_loss = run_epoch(train_loader, self.model, loss_compute)
+            step_loss = run_epoch(step, train_loader, self.model, loss_compute)
             elapsed = time.time() - start
             print('----------epoch: %d end, total loss= %f , train_time= %f Sec -------------' % (step, step_loss, elapsed))
             total_loss.append(step_loss)
