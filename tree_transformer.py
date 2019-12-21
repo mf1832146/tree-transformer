@@ -51,7 +51,7 @@ class ScaledDotProductAttention(nn.Module):
             attention = attention * scale
         if attn_mask is not None:
             # 给需要mask的地方设置一个负无穷（因为接下来要输入到softmax层，如果是0还是会有影响）
-            attention = attention.masked_fill_(mask=attn_mask.byte(), value=-1e9)
+            attention = attention.masked_fill_(mask=attn_mask.bool(), value=-1e9)
         # 计算softmax
         attention = self.softmax(attention)
         # 添加dropout
