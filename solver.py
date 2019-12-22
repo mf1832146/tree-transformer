@@ -95,12 +95,11 @@ class Solver:
 
         nl_i2w = load_dict(open('./data/nl_i2w.pkl', 'rb'))
         nl_w2i = load_dict(open('./data/nl_w2i.pkl', 'rb'))
-        data_set = TreeDataSet(self.args.test_data_set, self.args.code_max_len, skip=7868)
-        data_set_loader = DataLoader(dataset=data_set, batch_size=1, shuffle=False)
+        data_set = TreeDataSet(self.args.test_data_set, self.args.code_max_len, skip=7867)
+        data_set_loader = DataLoader(dataset=data_set, batch_size=2, shuffle=False)
         for i, data_batch in enumerate(data_set_loader):
             code, par_matrix, bro_matrix, rel_par_ids, rel_bro_ids, comments = data_batch
             batch = Batch(code, par_matrix, bro_matrix, rel_par_ids, rel_bro_ids, None)
-            print(comments.size())
             print('Comment:', ' '.join(nl_i2w[c] for c in comments[0]))
             start_pos = nl_w2i['<s>']
             predicts = greedy_decode(self.model, batch, self.args.comment_max_len, start_pos)
