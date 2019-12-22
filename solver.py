@@ -141,10 +141,10 @@ def greedy_decode(tree_transformer_model, batch, max_len, start_pos):
     ys = torch.ones(batch.code.size()[0], 1).fill_(start_pos).type_as(batch.code.data)
     for i in range(max_len - 1):
         #  memory, code_mask, comment, comment_mask
-        out, _, _ = model.decode(memory, batch.code_mask,
-                                 Variable(ys),
-                                 Variable(subsequent_mask(ys.size(1)).type_as(batch.code.data)))
-        prob = model.generator(out[:, -1])
+        out, _, _ = tree_transformer_model.decode(memory, batch.code_mask,
+                                                  Variable(ys),
+                                                  Variable(subsequent_mask(ys.size(1)).type_as(batch.code.data)))
+        prob = tree_transformer_model.generator(out[:, -1])
         _, next_word = torch.max(prob, dim=1)
         next_word = next_word.data[0]
         ys = torch.cat([ys,
