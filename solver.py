@@ -99,7 +99,8 @@ class Solver:
         data_set_loader = DataLoader(dataset=data_set, batch_size=1, shuffle=False)
         for i, data_batch in enumerate(data_set_loader):
             code, par_matrix, bro_matrix, rel_par_ids, rel_bro_ids, comments = data_batch
-            batch = Batch(code, par_matrix, bro_matrix, rel_par_ids, rel_bro_ids, comments)
+            batch = Batch(code, par_matrix, bro_matrix, rel_par_ids, rel_bro_ids, None)
+            print(comments.size())
             print('Comment:', ' '.join(nl_i2w[c] for c in batch.comments[0]))
             start_pos = nl_w2i['<s>']
             predicts = greedy_decode(self.model, batch, self.args.comment_max_len, start_pos)
