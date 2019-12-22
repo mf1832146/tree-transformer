@@ -98,9 +98,11 @@ class Solver:
         data_set = TreeDataSet(self.args.test_data_set, self.args.code_max_len, skip=7868)
         data_set_loader = DataLoader(dataset=data_set, batch_size=1, shuffle=False)
         for i, data_batch in enumerate(data_set_loader):
-            print('Comment:', ' '.join(nl_i2w[c] for c in data_batch.comments[0]))
+            code, par_matrix, bro_matrix, rel_par_ids, rel_bro_ids, comments = data_batch
+            batch = Batch(code, par_matrix, bro_matrix, rel_par_ids, rel_bro_ids, comments)
+            print('Comment:', ' '.join(nl_i2w[c] for c in batch.comments[0]))
             start_pos = nl_w2i['<s>']
-            predicts = greedy_decode(self.model, data_batch, self.args.comment_max_len, start_pos)
+            predicts = greedy_decode(self.model, batch, self.args.comment_max_len, start_pos)
             print('Predict:', ' '.join(nl_i2w[c] for c in predicts[0]))
 
 
