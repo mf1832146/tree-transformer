@@ -97,6 +97,7 @@ class Solver:
         nl_w2i = load_dict(open('./data/nl_w2i.pkl', 'rb'))
         data_set = TreeDataSet(self.args.test_data_set, self.args.code_max_len, skip=7867)
         data_set_loader = DataLoader(dataset=data_set, batch_size=1, shuffle=False)
+        self.model.eval()
         for i, data_batch in enumerate(data_set_loader):
             code, par_matrix, bro_matrix, rel_par_ids, rel_bro_ids, comments = data_batch
             batch = Batch(code, par_matrix, bro_matrix, rel_par_ids, rel_bro_ids, None)
