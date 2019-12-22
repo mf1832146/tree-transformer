@@ -3,9 +3,9 @@ from data_pre_process import load
 
 
 class TreeDataSet(Dataset):
-    def __init__(self, data_dir, max_size):
+    def __init__(self, data_dir, max_size, skip=0):
         print('Loading data...')
-        code, parent_matrix, brother_matrix, rel_par_ids, rel_bro_ids, comments = load(data_dir, max_size)
+        code, parent_matrix, brother_matrix, rel_par_ids, rel_bro_ids, comments = load(data_dir, max_size, skip)
         self.code = code
         self.par_matrix = parent_matrix
         self.bro_matrix = brother_matrix

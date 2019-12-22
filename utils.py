@@ -2,10 +2,15 @@ import re
 import numpy as np
 import torch
 import os
+import pickle
 
 
-def load_txt(file_path):
-    data = np.loadtxt(file_path, dtype=np.long)
+def load_dict(file_path):
+    return pickle.load(file_path)
+
+
+def load_txt(file_path, skip=0):
+    data = np.loadtxt(file_path, dtype=np.long, skiprows=skip)
     data = torch.from_numpy(data)
     # if torch.cuda.is_available():
     #     data = data.cuda()

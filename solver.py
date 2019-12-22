@@ -8,7 +8,7 @@ import torch
 import time
 import numpy as np
 from torch import nn
-from utils import subsequent_mask
+from utils import subsequent_mask, load_dict
 from tree_transformer import EncoderDecoder, Encoder, Decoder, Generator, make_model
 
 
@@ -88,6 +88,21 @@ class Solver:
 
         print('training process end, total_loss is =', total_loss)
 
+    def test(self):
+        if self.args.load:
+            path = os.path.join(self.model_dir, 'model.pth')
+            self.model.load_state_dict(torch.load(path)['state_dict'])
+
+        nl_i2w = load_dict('./data/nl_i2w.pkl')
+        nl_w2i = load_dict('./data/nl_w2i.pkl')
+        data_set = TreeDataSet(self.args.test_data_set, self.args.code_max_len, skip=7868)
+        data_set_loader = DataLoader(dataset=data_set, batch_size=1, shuffle=False)
+        for i, data_batch in enumerate(data_set_loader):
+            print('Comment:', ' '.join(nl_i2w[c] for c in data_batch.comments[0]))
+            start_pos = nl_w2i['<s>']
+            predicts = greedy_decode(self.model, data_batch, self.args.comment_max_len, start_pos)
+            print('Predict:', ' '.join(nl_i2w[c] for c in predicts[0]))
+
 
 def run_epoch(epoch, data_iter, model, loss_compute):
     start = time.time()
@@ -113,6 +128,26 @@ def run_epoch(epoch, data_iter, model, loss_compute):
             start = time.time()
             tokens = 0
     return total_loss / total_tokens
+
+
+def greedy_decode(tree_transformer_model, batch, max_len, start_pos):
+    memory, _ = tree_transformer_model.encode(batch.code,
+                                              batch.par_matrix,
+                                              batch.bro_matrix,
+                                              batch.re_par_ids,
+                                              batch.re_bro_ids)
+    ys = torch.ones(batch.size()[0], 1).fill_(start_pos).type_as(batch.code.data)
+    for i in range(max_len - 1):
+        #  memory, code_mask, comment, comment_mask
+        out, _, _ = model.decode(memory, batch.code_mask,
+                                 Variable(ys),
+                                 Variable(subsequent_mask(ys.size(1)).type_as(batch.code.data)))
+        prob = model.generator(out[:, -1])
+        _, next_word = torch.max(prob, dim=1)
+        next_word = next_word.data[0]
+        ys = torch.cat([ys,
+                        torch.ones(1, 1).type_as(batch.code.data).fill_(next_word)], dim=1)
+    return ys
 
 
 class Batch:
@@ -230,7 +265,7 @@ class SimpleLossCompute:
         loss.backward()
         if self.opt is not None:
             self.opt.step()
-            # self.opt.optimizer.zero_grad()
+            #self.opt.optimizer.zero_grad()
             self.opt.zero_grad()
         return (loss * norm).item()
 
@@ -244,7 +279,7 @@ def data_gen(V, batch, nbatches):
         rel_par_matrix = torch.zeros(batch, 10, 10).long()
         for i in range(10):
             for j in range(10):
-                rel_par_matrix[i][j] = int(max(-2, min(2, j-i)) + 2 + 1)
+                rel_par_matrix[:, i, j] = int(max(-2, min(2, j-i)) + 2 + 1)
         rel_bro_matrix = torch.zeros(batch, 10, 10).long()
 
         code = Variable(data, requires_grad=False)
@@ -266,9 +301,10 @@ if __name__ == '__main__':
 
     for epoch in range(10):
         model.train()
-        run_epoch(data_gen(V, 30, 20), model, SimpleLossCompute(model.generator, criterion, model_opt))
+        run_epoch(1, data_gen(V, 30, 20), model, SimpleLossCompute(model.generator, criterion, model_opt))
         model.eval()
-        print(run_epoch(data_gen(V, 30, 5), model, SimpleLossCompute(model.generator, criterion, None)))
+        # print(run_epoch(1, data_gen(V, 30, 5), model, SimpleLossCompute(model.generator, criterion, None)))
+        print(greedy_decode(model, data_gen(V, 1, 20), max_len=10, start_pos=1))
 
 
 
