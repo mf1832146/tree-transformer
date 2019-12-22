@@ -93,8 +93,8 @@ class Solver:
             path = os.path.join(self.model_dir, 'model.pth')
             self.model.load_state_dict(torch.load(path)['state_dict'])
 
-        nl_i2w = load_dict('./data/nl_i2w.pkl')
-        nl_w2i = load_dict('./data/nl_w2i.pkl')
+        nl_i2w = load_dict(open('./data/nl_i2w.pkl', 'rb'))
+        nl_w2i = load_dict(open('./data/nl_w2i.pkl', 'rb'))
         data_set = TreeDataSet(self.args.test_data_set, self.args.code_max_len, skip=7868)
         data_set_loader = DataLoader(dataset=data_set, batch_size=1, shuffle=False)
         for i, data_batch in enumerate(data_set_loader):
