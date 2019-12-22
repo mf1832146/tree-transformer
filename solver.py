@@ -96,7 +96,7 @@ class Solver:
         nl_i2w = load_dict(open('./data/nl_i2w.pkl', 'rb'))
         nl_w2i = load_dict(open('./data/nl_w2i.pkl', 'rb'))
         data_set = TreeDataSet(self.args.test_data_set, self.args.code_max_len, skip=7867)
-        data_set_loader = DataLoader(dataset=data_set, batch_size=2, shuffle=False)
+        data_set_loader = DataLoader(dataset=data_set, batch_size=1, shuffle=False)
         for i, data_batch in enumerate(data_set_loader):
             code, par_matrix, bro_matrix, rel_par_ids, rel_bro_ids, comments = data_batch
             batch = Batch(code, par_matrix, bro_matrix, rel_par_ids, rel_bro_ids, None)
@@ -138,7 +138,7 @@ def greedy_decode(tree_transformer_model, batch, max_len, start_pos):
                                               batch.bro_matrix,
                                               batch.re_par_ids,
                                               batch.re_bro_ids)
-    ys = torch.ones(batch.code.size()[0], 1).fill_(start_pos).type_as(batch.code.data)
+    ys = torch.ones(1, 1).fill_(start_pos).type_as(batch.code.data)
     for i in range(max_len - 1):
         #  memory, code_mask, comment, comment_mask
         out, _, _ = tree_transformer_model.decode(memory, batch.code_mask,
