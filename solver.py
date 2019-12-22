@@ -138,7 +138,7 @@ def greedy_decode(tree_transformer_model, batch, max_len, start_pos):
                                               batch.bro_matrix,
                                               batch.re_par_ids,
                                               batch.re_bro_ids)
-    ys = torch.ones(batch.size()[0], 1).fill_(start_pos).type_as(batch.code.data)
+    ys = torch.ones(batch.code.size()[0], 1).fill_(start_pos).type_as(batch.code.data)
     for i in range(max_len - 1):
         #  memory, code_mask, comment, comment_mask
         out, _, _ = model.decode(memory, batch.code_mask,
