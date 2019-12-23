@@ -9,6 +9,7 @@ from collections import Counter
 import pickle
 import torch
 import numpy as np
+from queue import Queue
 
 
 def pre_process():
@@ -306,7 +307,9 @@ def traverse(tree, max_size, k):
     :return:
     """
     root_id = tree.num
+
     queue = [tree]
+
     parent_map = {}
     brother_map = {}
 
@@ -318,12 +321,27 @@ def traverse(tree, max_size, k):
     relative_parent_ids = torch.zeros((max_size, max_size))
     relative_brother_ids = torch.zeros((max_size, max_size))
 
+    ids = []
+    tags = []
+
+    i = 0
+    while queue:
+        current_node = queue.pop()
+        current_node.num = i
+        i += 1
+        for child in reversed(current_node.children):
+            queue.append(child)
+
+    queue = [tree]
     while queue:
         current_node = queue.pop()
         node_id = current_node.num
 
         if node_id >= max_size:
             continue
+
+        ids.append(node_id)
+        tags.append(current_node.label)
 
         seq[node_id] = current_node.label
         if node_id == root_id:
@@ -332,15 +350,14 @@ def traverse(tree, max_size, k):
 
         if len(current_node.children) > 0:
             brother_node_ids = [x.num for x in current_node.children if x.num < max_size]
-            for child in current_node.children:
-                child_id = child.num
-                if child_id >= max_size:
+            for child in reversed(current_node.children):
+                if child.num >= max_size:
                     continue
+                child_id = child.num
+                queue.append(child)
 
                 parent_map[child_id] = parent_map[node_id] + [child_id]
                 brother_map[child_id] = brother_node_ids
-
-            queue.extend(current_node.children)
 
     for node_id in parent_map:
         for parent_id in parent_map[node_id]:
