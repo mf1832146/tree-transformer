@@ -404,7 +404,7 @@ class DecoderLayer(nn.Module):
         comments, comment_attention = self.self_attn(comments, comments, comments, comment_mask)
 
         # context attention
-        comments, code_attention = self.src_attn(memory, memory, comments, code_mask)
+        comments, code_attention = self.src_attn(comments, memory, memory, code_mask)
 
         # decoder's output, or context
         comments = self.feed_forward(comments)
