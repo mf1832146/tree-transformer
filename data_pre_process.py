@@ -326,6 +326,8 @@ def traverse(tree, max_size, k):
 
     i = 0
     while queue:
+        if i > max_size:
+            break
         current_node = queue.pop()
         current_node.num = i
         i += 1
