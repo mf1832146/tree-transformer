@@ -283,8 +283,8 @@ class SimpleLossCompute:
         loss.backward()
         if self.opt is not None:
             self.opt.step()
-            self.opt.optimizer.zero_grad()
-            # self.opt.zero_grad()
+            # self.opt.optimizer.zero_grad()
+            self.opt.zero_grad()
         return (loss * norm).item()
 
 
