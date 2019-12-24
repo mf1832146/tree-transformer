@@ -117,7 +117,7 @@ class Solver:
             start_pos = nl_w2i['<s>']
             predicts = greedy_decode(self.model, batch, self.args.comment_max_len, start_pos)
             log('Predict:' + ' '.join(nl_i2w[c.item()] for c in predicts[0]), './train_model/test.txt')
-        print('_____贪心验证——end_______')
+        log('_____贪心验证——end_______', './train_model/test.txt')
 
 
 def run_epoch(epoch, data_iter, model, loss_compute):
@@ -152,7 +152,6 @@ def greedy_decode(tree_transformer_model, batch, max_len, start_pos):
                                               batch.bro_matrix,
                                               batch.re_par_ids,
                                               batch.re_bro_ids)
-    print(memory)
     ys = torch.ones(1, 1).fill_(start_pos).type_as(batch.code.data)
     for i in range(max_len - 1):
         #  memory, code_mask, comment, comment_mask
