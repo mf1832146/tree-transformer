@@ -6,7 +6,7 @@ def parse():
     parser = argparse.ArgumentParser(description='tree transformer')
     parser.add_argument('-model_dir', default='train_model', help='output model weight dir')
     parser.add_argument('-batch_size', type=int, default=16)
-    parser.add_argument('-num_step', type=int, default=50)
+    parser.add_argument('-num_step', type=int, default=250)
     parser.add_argument('-data_dir', default='./data')
     parser.add_argument('-load', action='store_true', help='load pretrained model')
     parser.add_argument('-train', action='store_true')
