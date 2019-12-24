@@ -22,9 +22,9 @@ def parse():
     parser.add_argument('-relative_pos', type=bool, default=True, help='use relative position')
     parser.add_argument('-k', type=int, default=5, help='relative window size')
     parser.add_argument('-num_layers', type=int, default=3, help='layer num')
-    parser.add_argument('-model_dim', type=int, default=512)
-    parser.add_argument('-num_heads', type=int, default=8)
-    parser.add_argument('-ffn_dim', type=int, default=1024)
+    parser.add_argument('-model_dim', type=int, default=256)
+    parser.add_argument('-num_heads', type=int, default=4)
+    parser.add_argument('-ffn_dim', type=int, default=512)
     parser.add_argument('-dropout', type=float, default=0.2)
 
     args = parser.parse_args()
