@@ -113,10 +113,10 @@ class Solver:
         for i, data_batch in enumerate(data_set_loader):
             code, par_matrix, bro_matrix, rel_par_ids, rel_bro_ids, comments = data_batch
             batch = Batch(code, par_matrix, bro_matrix, rel_par_ids, rel_bro_ids, None)
-            log('Comment:' + ' '.join(nl_i2w[c.item()] for c in comments[0]), './model/test.txt')
+            log('Comment:' + ' '.join(nl_i2w[c.item()] for c in comments[0]), './train_model/test.txt')
             start_pos = nl_w2i['<s>']
             predicts = greedy_decode(self.model, batch, self.args.comment_max_len, start_pos)
-            log('Predict:' + ' '.join(nl_i2w[c.item()] for c in predicts[0]), './model/test.txt')
+            log('Predict:' + ' '.join(nl_i2w[c.item()] for c in predicts[0]), './train_model/test.txt')
         print('_____贪心验证——end_______')
 
 
