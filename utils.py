@@ -5,6 +5,11 @@ import os
 import pickle
 
 
+def log(msg, file_path):
+    with open(file_path, 'a+') as f:
+        f.write(msg + '\n')
+
+
 def load_dict(file_path):
     return pickle.load(file_path)
 

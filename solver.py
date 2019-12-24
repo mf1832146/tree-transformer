@@ -8,8 +8,9 @@ import torch
 import time
 import numpy as np
 from torch import nn
-from utils import subsequent_mask, load_dict
+from utils import subsequent_mask, load_dict, log
 from tree_transformer import EncoderDecoder, Encoder, Decoder, Generator, make_model
+from bert_optimizer import BertAdam
 
 
 class Solver:
@@ -42,8 +43,8 @@ class Solver:
             if p.dim() > 1:
                 nn.init.xavier_uniform(p)
 
-        if torch.cuda.is_available:
-            model = model.cuda()
+        #if torch.cuda.is_available:
+        #    model = model.cuda()
         return model
 
     def train(self):
@@ -61,10 +62,15 @@ class Solver:
         print('total param num:', tt)
 
         print('Loading training data...')
-        data_set = TreeDataSet(self.args.train_data_set, self.args.code_max_len)
+        train_data_set = TreeDataSet(self.args.train_data_set, self.args.code_max_len)
+        test_data_set = TreeDataSet(self.args.test_data_set, self.args.code_max_len, skip=7860)
+
+        train_loader = DataLoader(dataset=train_data_set, batch_size=self.args.batch_size, shuffle=True)
+        test_loader = DataLoader(dataset=test_data_set, batch_size=1, shuffle=False)
+
         print('load training data finished')
-        optim = torch.optim.Adam(self.model.parameters(), lr=1e-4, betas=(0.9, 0.98), eps=1e-9)
-        # optim = BertAdam(self.model.parameters(), lr=1e-4)
+        # optim = torch.optim.Adam(self.model.parameters(), lr=1e-4, betas=(0.9, 0.98), eps=1e-9)
+        optim = BertAdam(self.model.parameters(), lr=1e-4)
         criterion = LabelSmoothing(size=self.args.comment_vocab_size, padding_idx=0, smoothing=0.1)
         criterion = criterion.cuda()
         loss_compute = SimpleLossCompute(self.model.generator, criterion, optim)
@@ -72,7 +78,6 @@ class Solver:
         total_loss = []
 
         for step in range(self.args.num_step):
-            train_loader = DataLoader(dataset=data_set, batch_size=self.args.batch_size, shuffle=True)
             self.model.train()
 
             start = time.time()
@@ -85,26 +90,34 @@ class Solver:
             model_name = 'model.pth'
             state = {'epoch': step, 'state_dict': self.model.state_dict()}
             torch.save(state, os.path.join(self.model_dir, model_name))
+            # test
+            self.model.eval()
+            self.test(test_loader)
 
         print('training process end, total_loss is =', total_loss)
 
-    def test(self):
+    def test(self, data_set_loader=None):
         if self.args.load:
             path = os.path.join(self.model_dir, 'model.pth')
-            self.model.load_state_dict(torch.load(path)['state_dict'])
+            self.model.load_state_dict(torch.load(path, map_location=lambda storage, loc: storage)['state_dict'])
+
+        if data_set_loader is None:
+            data_set = TreeDataSet(self.args.test_data_set, self.args.code_max_len, skip=7860)
+            data_set_loader = DataLoader(dataset=data_set, batch_size=1, shuffle=False)
 
         nl_i2w = load_dict(open('./data/nl_i2w.pkl', 'rb'))
         nl_w2i = load_dict(open('./data/nl_w2i.pkl', 'rb'))
-        data_set = TreeDataSet(self.args.test_data_set, self.args.code_max_len, skip=7860)
-        data_set_loader = DataLoader(dataset=data_set, batch_size=1, shuffle=False)
+
         self.model.eval()
+        log('_____贪心验证——end_______', './model/test.txt')
         for i, data_batch in enumerate(data_set_loader):
             code, par_matrix, bro_matrix, rel_par_ids, rel_bro_ids, comments = data_batch
             batch = Batch(code, par_matrix, bro_matrix, rel_par_ids, rel_bro_ids, None)
-            print('Comment:', ' '.join(nl_i2w[c.item()] for c in comments[0]))
+            log('Comment:' + ' '.join(nl_i2w[c.item()] for c in comments[0]), './model/test.txt')
             start_pos = nl_w2i['<s>']
             predicts = greedy_decode(self.model, batch, self.args.comment_max_len, start_pos)
-            print('Predict:', ' '.join(nl_i2w[c.item()] for c in predicts[0]))
+            log('Predict:' + ' '.join(nl_i2w[c.item()] for c in predicts[0]), './model/test.txt')
+        print('_____贪心验证——end_______')
 
 
 def run_epoch(epoch, data_iter, model, loss_compute):
@@ -113,9 +126,9 @@ def run_epoch(epoch, data_iter, model, loss_compute):
     total_loss = 0
     tokens = 0
     for i, data_batch in enumerate(data_iter):
-        code, par_matrix, bro_matrix, rel_par_ids, rel_bro_ids, comments = data_batch
-        batch = Batch(code, par_matrix, bro_matrix, rel_par_ids, rel_bro_ids, comments)
-        # batch = data_batch
+        # code, par_matrix, bro_matrix, rel_par_ids, rel_bro_ids, comments = data_batch
+        # batch = Batch(code, par_matrix, bro_matrix, rel_par_ids, rel_bro_ids, comments)
+        batch = data_batch
         out, _, _, _ = model.forward(batch.code, batch.code_mask,
                                      batch.par_matrix, batch.bro_matrix,
                                      batch.re_par_ids, batch.re_bro_ids,
@@ -139,15 +152,14 @@ def greedy_decode(tree_transformer_model, batch, max_len, start_pos):
                                               batch.bro_matrix,
                                               batch.re_par_ids,
                                               batch.re_bro_ids)
-    print('______')
-    print('code_mask', batch.code_mask)
+    print(memory)
     ys = torch.ones(1, 1).fill_(start_pos).type_as(batch.code.data)
     for i in range(max_len - 1):
         #  memory, code_mask, comment, comment_mask
         out, _, _ = tree_transformer_model.decode(memory, batch.code_mask,
-                                                  Variable(ys),
-                                                  Variable(subsequent_mask(ys.size(1)).type_as(batch.code.data)))
-        print('out', out)
+                                                  Variable(ys), Variable(subsequent_mask(ys.size(1)).type_as(batch.code.data)))
+        if i == 0 :
+            print('out', out)
         prob = tree_transformer_model.generator(out[:, -1])
         _, next_word = torch.max(prob, dim=1)
         next_word = next_word.data[0]
@@ -271,8 +283,8 @@ class SimpleLossCompute:
         loss.backward()
         if self.opt is not None:
             self.opt.step()
-            #self.opt.optimizer.zero_grad()
-            self.opt.zero_grad()
+            self.opt.optimizer.zero_grad()
+            # self.opt.zero_grad()
         return (loss * norm).item()
 
 
@@ -308,9 +320,9 @@ if __name__ == '__main__':
     for epoch in range(10):
         model.train()
         run_epoch(1, data_gen(V, 30, 20), model, SimpleLossCompute(model.generator, criterion, model_opt))
-        model.eval()
+        # model.eval()
         # print(run_epoch(1, data_gen(V, 30, 5), model, SimpleLossCompute(model.generator, criterion, None)))
-        print(greedy_decode(model, data_gen(V, 1, 20), max_len=10, start_pos=1))
+        # print(greedy_decode(model, data_gen(V, 1, 20), max_len=10, start_pos=1))
 
 
 
