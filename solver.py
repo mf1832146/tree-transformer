@@ -43,8 +43,8 @@ class Solver:
             if p.dim() > 1:
                 nn.init.xavier_uniform(p)
 
-        #if torch.cuda.is_available:
-        #    model = model.cuda()
+        if torch.cuda.is_available:
+            model = model.cuda()
         return model
 
     def train(self):
