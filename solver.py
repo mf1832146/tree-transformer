@@ -62,8 +62,8 @@ class Solver:
         print('total param num:', tt)
 
         print('Loading training data...')
-        train_data_set = TreeDataSet(self.args.train_data_set, self.args.code_max_len)
-        test_data_set = TreeDataSet(self.args.test_data_set, self.args.code_max_len, skip=self.args.skip_num)
+        train_data_set = TreeDataSet(self.args.train_data_set, self.args.code_max_len, skip=self.args.skip_num)
+        test_data_set = TreeDataSet(self.args.test_data_set, self.args.code_max_len, skip=7860)
 
         train_loader = DataLoader(dataset=train_data_set, batch_size=self.args.batch_size, shuffle=True)
         test_loader = DataLoader(dataset=test_data_set, batch_size=1, shuffle=False)
