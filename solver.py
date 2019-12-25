@@ -118,8 +118,8 @@ class Solver:
             data_set = TreeDataSet(self.args.test_data_set, self.args.code_max_len, skip=7860)
             data_set_loader = DataLoader(dataset=data_set, batch_size=1, shuffle=False)
 
-        nl_i2w = load_dict(open('/home/tangze/tree-transformer/tree-transformer/tmp_vocab/1/nl_i2w.pkl', 'rb'))
-        nl_w2i = load_dict(open('/home/tangze/tree-transformer/tree-transformer/tmp_vocab/1/nl_w2i.pkl', 'rb'))
+        nl_i2w = load_dict(open('./data/nl_i2w.pkl', 'rb'))
+        nl_w2i = load_dict(open('./data/nl_w2i.pkl', 'rb'))
 
         self.model.eval()
         log('_____贪心验证——end_______', './train_model/test.txt')
