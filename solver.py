@@ -63,7 +63,7 @@ class Solver:
 
         print('Loading training data...')
         train_data_set = TreeDataSet(self.args.train_data_set, self.args.code_max_len)
-        test_data_set = TreeDataSet(self.args.test_data_set, self.args.code_max_len, skip=7860)
+        test_data_set = TreeDataSet(self.args.test_data_set, self.args.code_max_len, skip=self.args.skip_num)
 
         train_loader = DataLoader(dataset=train_data_set, batch_size=self.args.batch_size, shuffle=True)
         test_loader = DataLoader(dataset=test_data_set, batch_size=1, shuffle=False)
@@ -96,6 +96,19 @@ class Solver:
 
         print('training process end, total_loss is =', total_loss)
 
+    def eval(self):
+        if self.args.load:
+            path = os.path.join(self.model_dir, 'model.pth')
+            self.model.load_state_dict(torch.load(path, map_location=lambda storage, loc: storage)['state_dict'])
+
+        data_set = TreeDataSet(self.args.valid_data_set, self.args.code_max_len, skip=7860)
+        data_set_loader = DataLoader(dataset=data_set, batch_size=1, shuffle=False)
+
+        nl_i2w = load_dict(open('./data/nl_i2w.pkl', 'rb'))
+        nl_w2i = load_dict(open('./data/nl_w2i.pkl', 'rb'))
+
+        log('__beam-')
+
     def test(self, data_set_loader=None):
         if self.args.load:
             path = os.path.join(self.model_dir, 'model.pth')
@@ -105,8 +118,8 @@ class Solver:
             data_set = TreeDataSet(self.args.test_data_set, self.args.code_max_len, skip=7860)
             data_set_loader = DataLoader(dataset=data_set, batch_size=1, shuffle=False)
 
-        nl_i2w = load_dict(open('./data/nl_i2w.pkl', 'rb'))
-        nl_w2i = load_dict(open('./data/nl_w2i.pkl', 'rb'))
+        nl_i2w = load_dict(open('/home/tangze/tree-transformer/tree-transformer/tmp_vocab/1/nl_i2w.pkl', 'rb'))
+        nl_w2i = load_dict(open('/home/tangze/tree-transformer/tree-transformer/tmp_vocab/1/nl_w2i.pkl', 'rb'))
 
         self.model.eval()
         log('_____贪心验证——end_______', './train_model/test.txt')

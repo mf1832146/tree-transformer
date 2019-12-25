@@ -4,6 +4,7 @@ import numpy as np
 import torch
 import torch.nn as nn
 import torch.nn.functional as F
+from utils import gelu
 from torch.autograd import Variable
 
 
@@ -247,7 +248,7 @@ class PositionWiseFeedForward(nn.Module):
         :return:
         """
         output = x.transpose(1, 2)
-        output = self.w2(F.relu(self.w1(output)))
+        output = self.w2(gelu(self.w1(output)))
         output = self.dropout(output.transpose(1, 2))
 
         # add residual and norm layer
