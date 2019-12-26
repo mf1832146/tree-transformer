@@ -306,16 +306,21 @@ def convert_comment_to_ids(comment, dic, max_len):
 
 def tokenize(s):
     w_list = ["<s>"]
-    pattern = "[A-Z]"
+    pattern = "[A-Z.]"
     s = re.sub(pattern, lambda x: " " + x.group(0), s)
     words = s.split()
     for word in words:
-        print(word)
+        tokens = []
+        is_skip = False
         for token_word in tokenizer.tokenize(word):
-            print(token_word)
             if "##" in token_word:
-                token_word = token_word[2:]
-            w_list.append(token_word)
+                is_skip = True
+                break
+            tokens.append(token_word)
+        if is_skip:
+            w_list.append('<UNK>')
+        else:
+            w_list.extend(tokens)
     w_list.append("</s>")
     return w_list
 
@@ -407,9 +412,9 @@ def traverse(tree, max_size, k):
 
 
 if __name__ == '__main__':
-    pre_process()
-    #print(tokenize('getStudent'))
+    # pre_process()
+    print(tokenize('getStudent'))
     #print(tokenize('I am getStudent'))
     #print(tokenize('use friend.getStudent()'))
-    #print(tokenize('this is a get_Std_msg() you know'))
-    # print(tokenize('use friend.helloworld()'))
+    print(tokenize('this is a get_Std_msg() you know'))
+    print(tokenize('use friend.helloworld()'))
