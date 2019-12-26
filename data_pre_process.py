@@ -301,7 +301,7 @@ def tokenize(s):
     w_list = ["<s>"]
     words = s.strip().split()
     for word in words:
-        w_list.append(tokenizer.tokenize(word))
+        w_list.extend(tokenizer.tokenize(word))
     w_list.append("</s>")
     return w_list
 
