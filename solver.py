@@ -36,7 +36,9 @@ class Solver:
                           model_dim=self.args.model_dim,
                           num_heads=self.args.num_heads,
                           ffn_dim=self.args.ffn_dim,
-                          dropout=self.args.dropout)
+                          dropout=self.args.dropout,
+                          use_pre_trained=self.args.use_pre_trained_emb,
+                          pre_trained_path=self.args.pre_trained_path)
         model = EncoderDecoder(encoder, decoder, Generator(self.args.model_dim, self.args.comment_vocab_size))
 
         for p in model.parameters():

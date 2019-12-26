@@ -15,6 +15,8 @@ def parse():
     parser.add_argument('-valid_data_set', default='./data/tree/valid/')
     parser.add_argument('-test_data_set', default='./data/tree/test/')
     parser.add_argument('-skip_num', default=0, type=int)
+    parser.add_argument('-pre_trained_path', default='./data/nl_vocab.txt')
+    parser.add_argument('-use_pre_trained_emb', default=False)
 
     parser.add_argument('-code_vocab_size', type=int, default=31131, help='code vocab size')
     parser.add_argument('-code_max_len', type=int, default=100, help='max length of code')
