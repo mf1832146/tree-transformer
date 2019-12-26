@@ -120,13 +120,21 @@ def deal_with_tree(data_dir, max_size, k, max_comment_size):
         t.close()
         raise
 
-    code_tensor = torch.stack(code_data, dim=0)
-    parent_matrix_tensor = torch.stack(parent_matrix_data, dim=0).view(-1, max_size * max_size)
-    brother_matrix_tensor = torch.stack(brother_matrix_data, dim=0).view(-1, max_size * max_size)
-    parent_ids_tensor = torch.stack(parent_ids_data, dim=0)
-    brother_ids_tensor = torch.stack(brother_ids_data, dim=0)
-    relative_parent_ids_tensor = torch.stack(relative_parent_ids_data, dim=0).view(-1, max_size * max_size)
-    relative_brother_ids_tensor = torch.stack(relative_brother_ids_data, dim=0).view(-1, max_size * max_size)
+    # code_tensor = torch.stack(code_data, dim=0)
+    # parent_matrix_tensor = torch.stack(parent_matrix_data, dim=0).view(-1, max_size * max_size)
+    # brother_matrix_tensor = torch.stack(brother_matrix_data, dim=0).view(-1, max_size * max_size)
+    # parent_ids_tensor = torch.stack(parent_ids_data, dim=0)
+    # brother_ids_tensor = torch.stack(brother_ids_data, dim=0)
+    # relative_parent_ids_tensor = torch.stack(relative_parent_ids_data, dim=0).view(-1, max_size * max_size)
+    # relative_brother_ids_tensor = torch.stack(relative_brother_ids_data, dim=0).view(-1, max_size * max_size)
+    code_tensor = None
+    parent_matrix_tensor = None
+    brother_matrix_tensor = None
+    parent_ids_tensor = None
+    brother_ids_tensor = None
+    relative_parent_ids_tensor = None
+    relative_brother_ids_tensor = None
+
     comments_tensor = torch.stack(comments, dim=0)
 
     print('skip num', skip)
