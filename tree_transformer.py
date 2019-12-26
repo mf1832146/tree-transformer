@@ -440,6 +440,7 @@ class Decoder(nn.Module):
 
     def forward(self, comments, memory, code_mask, comment_mask=None):
         comments = self.seq_embedding(comments)
+        print(comments)
         comments = self.pos_embedding(comments)
         comment_attn = []
         code_attn = []
