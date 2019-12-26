@@ -177,9 +177,9 @@ def generate_vocab(path):
     "comment vocab"
     comment_vocab = Counter([x for l in nls.values() for x in l])
     nl_i2w = {i: w for i, w in enumerate(
-        ["<PAD>", "<UNK>"] + sorted([x[0] for x in comment_vocab.most_common(30000)]))}
+        ["<PAD>", "<UNK>"] + sorted([x[0] for x in comment_vocab.most_common(30000) if x[0] != '<UNK>']))}
     nl_w2i = {w: i for i, w in enumerate(
-        ["<PAD>", "<UNK>"] + sorted([x[0] for x in comment_vocab.most_common(30000)]))}
+        ["<PAD>", "<UNK>"] + sorted([x[0] for x in comment_vocab.most_common(30000) if x[0] != '<UNK>']))}
     pickle.dump(nl_i2w, open("./data/nl_i2w.pkl", "wb"))
     pickle.dump(nl_w2i, open("./data/nl_w2i.pkl", "wb"))
 
