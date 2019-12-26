@@ -10,6 +10,9 @@ import pickle
 import torch
 import numpy as np
 from queue import Queue
+from pytorch_pretrained_bert import BertTokenizer
+
+tokenizer = BertTokenizer.from_pretrained('bert-base-uncased')
 
 
 def pre_process():
@@ -43,13 +46,13 @@ def pre_process():
 
         save_path = './data/tree/' + set_name + '/'
 
-        save_to_file(code_tensor, save_path + 'code.txt')
-        save_to_file(parent_matrix_tensor, save_path + 'parent_matrix.txt')
-        save_to_file(brother_matrix_tensor, save_path + 'brother_matrix.txt')
-        save_to_file(parent_ids_tensor, save_path + 'parent_ids.txt')
-        save_to_file(brother_ids_tensor, save_path + 'brother_ids.txt')
-        save_to_file(relative_parent_ids_tensor, save_path + 'relative_parents.txt')
-        save_to_file(relative_brother_ids_tensor, save_path + 'relative_brothers.txt')
+        # save_to_file(code_tensor, save_path + 'code.txt')
+        # save_to_file(parent_matrix_tensor, save_path + 'parent_matrix.txt')
+        # save_to_file(brother_matrix_tensor, save_path + 'brother_matrix.txt')
+        # save_to_file(parent_ids_tensor, save_path + 'parent_ids.txt')
+        # save_to_file(brother_ids_tensor, save_path + 'brother_ids.txt')
+        # save_to_file(relative_parent_ids_tensor, save_path + 'relative_parents.txt')
+        # save_to_file(relative_brother_ids_tensor, save_path + 'relative_brothers.txt')
         save_to_file(comments_tensor, save_path + 'comments.txt')
 
 
@@ -101,16 +104,16 @@ def deal_with_tree(data_dir, max_size, k, max_comment_size):
                 if is_invalid_seq(seq):
                     skip += 1
                     continue
-                tree = rebuild_tree(tree, code_dic)
-                code_seq, parent_matrix, brother_matrix, parent_ids, brother_ids, relative_parent_ids, relative_brother_ids = traverse(tree, max_size, k)
-
-                code_data.append(code_seq)
-                parent_matrix_data.append(parent_matrix)
-                brother_matrix_data.append(brother_matrix)
-                parent_ids_data.append(parent_ids)
-                brother_ids_data.append(brother_ids)
-                relative_parent_ids_data.append(relative_parent_ids)
-                relative_brother_ids_data.append(relative_brother_ids)
+                # tree = rebuild_tree(tree, code_dic)
+                # code_seq, parent_matrix, brother_matrix, parent_ids, brother_ids, relative_parent_ids, relative_brother_ids = traverse(tree, max_size, k)
+                #
+                # code_data.append(code_seq)
+                # parent_matrix_data.append(parent_matrix)
+                # brother_matrix_data.append(brother_matrix)
+                # parent_ids_data.append(parent_ids)
+                # brother_ids_data.append(brother_ids)
+                # relative_parent_ids_data.append(relative_parent_ids)
+                # relative_brother_ids_data.append(relative_brother_ids)
                 seq_tensor = convert_comment_to_ids(seq, comment_dic, max_comment_size)
                 comments.append(seq_tensor)
     except KeyboardInterrupt as e:
@@ -174,29 +177,29 @@ def generate_vocab(path):
     pickle.dump(nl_w2i, open("./data/nl_w2i.pkl", "wb"))
 
     "code vocab"
-    code_labels = [traverse_label(c) for c in nls.keys()]
-    code_labels = [l for s in code_labels for l in s]
-    non_terminals = set(
-        [get_bracket(x) for x in tqdm(
-            list(set(code_labels)), "collect non-tarminals")]) - set([None, "(SimpleName)"])
-    non_terminals = sorted(list(non_terminals))
-    ids = Counter(
-        [y for y in [get_identifier(x) for x in tqdm(
-            code_labels, "collect identifiers")] if y is not None])
-    ids_list = [x[0] for x in ids.most_common(30000)]
-    values = Counter(
-        [y for y in [get_values(x) for x in tqdm(
-            code_labels, "collect values")] if y is not None])
-    values_list = [x[0] for x in values.most_common(1000)]
-
-    vocab = ["<PAD>", "<UNK>", "SimpleName_<UNK>", "Value_<NUM>", "Value_<STR>"]
-    vocab += non_terminals + ids_list + values_list + ["(", ")"]
-
-    code_i2w = {i: w for i, w in enumerate(vocab)}
-    code_w2i = {w: i for i, w in enumerate(vocab)}
-
-    pickle.dump(code_i2w, open("./data/code_i2w.pkl", "wb"))
-    pickle.dump(code_w2i, open("./data/code_w2i.pkl", "wb"))
+    # code_labels = [traverse_label(c) for c in nls.keys()]
+    # code_labels = [l for s in code_labels for l in s]
+    # non_terminals = set(
+    #     [get_bracket(x) for x in tqdm(
+    #         list(set(code_labels)), "collect non-tarminals")]) - set([None, "(SimpleName)"])
+    # non_terminals = sorted(list(non_terminals))
+    # ids = Counter(
+    #     [y for y in [get_identifier(x) for x in tqdm(
+    #         code_labels, "collect identifiers")] if y is not None])
+    # ids_list = [x[0] for x in ids.most_common(30000)]
+    # values = Counter(
+    #     [y for y in [get_values(x) for x in tqdm(
+    #         code_labels, "collect values")] if y is not None])
+    # values_list = [x[0] for x in values.most_common(1000)]
+    #
+    # vocab = ["<PAD>", "<UNK>", "SimpleName_<UNK>", "Value_<NUM>", "Value_<STR>"]
+    # vocab += non_terminals + ids_list + values_list + ["(", ")"]
+    #
+    # code_i2w = {i: w for i, w in enumerate(vocab)}
+    # code_w2i = {w: i for i, w in enumerate(vocab)}
+    #
+    # pickle.dump(code_i2w, open("./data/code_i2w.pkl", "wb"))
+    # pickle.dump(code_w2i, open("./data/code_w2i.pkl", "wb"))
 
 
 def get_values(s):
@@ -295,7 +298,12 @@ def convert_comment_to_ids(comment, dic, max_len):
 
 
 def tokenize(s):
-    return ["<s>"] + nltk.word_tokenize(s) + ["</s>"]
+    w_list = ["<s>"]
+    words = s.strip().split()
+    for word in words:
+        w_list.append(tokenizer.tokenize(word))
+    w_list.append("</s>")
+    return w_list
 
 
 def traverse(tree, max_size, k):
