@@ -430,7 +430,7 @@ class Decoder(nn.Module):
             [DecoderLayer(model_dim, num_heads, ffn_dim, dropout) for _ in
              range(num_layers)])
         if use_pre_trained:
-            embs = torch.from_numpy(np.loadtxt(pre_trained_path, dtype=np.double))
+            embs = torch.from_numpy(np.loadtxt(pre_trained_path, dtype=np.float32))
             self.seq_embedding = nn.Embedding.from_pretrained(embs)
             print('load pre_trained_embs')
         else:
@@ -440,7 +440,6 @@ class Decoder(nn.Module):
 
     def forward(self, comments, memory, code_mask, comment_mask=None):
         comments = self.seq_embedding(comments)
-        print(comments)
         comments = self.pos_embedding(comments)
         comment_attn = []
         code_attn = []
@@ -527,7 +526,7 @@ class Generator(nn.Module):
 def make_model(code_vocab_size, comment_vocab_size,
                max_code_len=100, max_comment_len=100,
                relative_pos=True, k=2,
-               N=6, d_model=512, d_ff=2048, h=8, dropout=0.1):
+               N=4, d_model=100, d_ff=2048, h=4, dropout=0.1):
     encoder = Encoder(voc_size=code_vocab_size,
                       max_size=max_code_len,
                       num_layers=N,
