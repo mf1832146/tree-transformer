@@ -412,9 +412,9 @@ def traverse(tree, max_size, k):
 
 
 if __name__ == '__main__':
-    # pre_process()
-    print(tokenize('getStudent'))
+    pre_process()
+    # print(tokenize('getStudent'))
     #print(tokenize('I am getStudent'))
     #print(tokenize('use friend.getStudent()'))
-    print(tokenize('this is a get_Std_msg() you know'))
-    print(tokenize('use friend.helloworld()'))
+    #print(tokenize('this is a get_Std_msg() you know'))
+    #print(tokenize('use friend.helloworld()'))
