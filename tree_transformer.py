@@ -420,14 +420,22 @@ class Decoder(nn.Module):
                  model_dim=512,
                  num_heads=8,
                  ffn_dim=2048,
-                 dropout=0.0):
+                 dropout=0.0,
+                 use_pre_trained=False,
+                 pre_trained_path=None):
         super(Decoder, self).__init__()
 
         self.num_layers = num_layers
         self.decoder_layers = nn.ModuleList(
             [DecoderLayer(model_dim, num_heads, ffn_dim, dropout) for _ in
              range(num_layers)])
-        self.seq_embedding = nn.Embedding(vocab_size, model_dim, padding_idx=0)
+        if use_pre_trained:
+            embs = torch.from_numpy(np.loadtxt(pre_trained_path, dtype=np.float))
+            self.seq_embedding = nn.Embedding.from_pretrained(embs)
+            print('load pre_trained_embs')
+        else:
+            self.seq_embedding = nn.Embedding(vocab_size, model_dim, padding_idx=0)
+
         self.pos_embedding = PositionalEncoding(model_dim, max_seq_len)
 
     def forward(self, comments, memory, code_mask, comment_mask=None):
@@ -534,7 +542,9 @@ def make_model(code_vocab_size, comment_vocab_size,
                       model_dim=d_model,
                       num_heads=h,
                       ffn_dim=d_ff,
-                      dropout=dropout)
+                      dropout=dropout,
+                      use_pre_trained=True,
+                      pre_trained_path='./data/nl_vocab.txt')
     model = EncoderDecoder(encoder, decoder, Generator(d_model, comment_vocab_size))
 
     for p in model.parameters():
@@ -546,4 +556,5 @@ def make_model(code_vocab_size, comment_vocab_size,
 
 if __name__ == '__main__':
     tmp_model = make_model(10, 10, 2)
+
     None
