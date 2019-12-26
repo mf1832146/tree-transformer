@@ -430,7 +430,7 @@ class Decoder(nn.Module):
             [DecoderLayer(model_dim, num_heads, ffn_dim, dropout) for _ in
              range(num_layers)])
         if use_pre_trained:
-            embs = torch.from_numpy(np.loadtxt(pre_trained_path, dtype=np.float))
+            embs = torch.from_numpy(np.loadtxt(pre_trained_path, dtype=np.double))
             self.seq_embedding = nn.Embedding.from_pretrained(embs)
             print('load pre_trained_embs')
         else:
