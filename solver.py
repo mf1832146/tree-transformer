@@ -73,7 +73,7 @@ class Solver:
         print('load training data finished')
         # optim = torch.optim.Adam(self.model.parameters(), lr=1e-4, betas=(0.9, 0.98), eps=1e-9)
         # optim = BertAdam(self.model.parameters(), lr=1e-4)
-        model_opt = NoamOpt(100, 1, 400,
+        optim = NoamOpt(100, 1, 400,
                             BertAdam(self.model.parameters(), lr=1e-4))
         criterion = LabelSmoothing(size=self.args.comment_vocab_size, padding_idx=0, smoothing=0.1)
         criterion = criterion.cuda()
