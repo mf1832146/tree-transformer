@@ -143,9 +143,9 @@ def run_epoch(epoch, data_iter, model, loss_compute):
     total_loss = 0
     tokens = 0
     for i, data_batch in enumerate(data_iter):
-        code, par_matrix, bro_matrix, rel_par_ids, rel_bro_ids, comments = data_batch
-        batch = Batch(code, par_matrix, bro_matrix, rel_par_ids, rel_bro_ids, comments)
-        #batch = data_batch
+        # code, par_matrix, bro_matrix, rel_par_ids, rel_bro_ids, comments = data_batch
+        # batch = Batch(code, par_matrix, bro_matrix, rel_par_ids, rel_bro_ids, comments)
+        batch = data_batch
         out, _, _, _ = model.forward(batch.code, batch.code_mask,
                                      batch.par_matrix, batch.bro_matrix,
                                      batch.re_par_ids, batch.re_bro_ids,
@@ -297,8 +297,8 @@ class SimpleLossCompute:
         loss.backward()
         if self.opt is not None:
             self.opt.step()
-            # self.opt.optimizer.zero_grad()
-            self.opt.zero_grad()
+            self.opt.optimizer.zero_grad()
+            # self.opt.zero_grad()
         return (loss * norm).item()
 
 
@@ -327,16 +327,20 @@ def data_gen(V, batch, nbatches):
 if __name__ == '__main__':
     V = 11
     criterion = LabelSmoothing(size=V, padding_idx=0, smoothing=0.0)
-    model = make_model(V, V, 2)
-    model_opt = NoamOpt(100, 1, 400,
+    model = make_model(V, V, 2, d_model=512)
+    model_opt = NoamOpt(512, 1, 400,
         torch.optim.Adam(model.parameters(), lr=0, betas=(0.9, 0.98), eps=1e-9))
 
-    for epoch in range(10):
+    for epoch in range(100):
         model.train()
         run_epoch(1, data_gen(V, 30, 20), model, SimpleLossCompute(model.generator, criterion, model_opt))
-        # model.eval()
-        # print(run_epoch(1, data_gen(V, 30, 5), model, SimpleLossCompute(model.generator, criterion, None)))
-        # print(greedy_decode(model, data_gen(V, 1, 20), max_len=10, start_pos=1))
+        if epoch % 10 == 1:
+            model.eval()
+            print(run_epoch(1, data_gen(V, 30, 5), model, SimpleLossCompute(model.generator, criterion, None)))
+            data_test = data_gen(V, 1, 3)
+            for batch in data_test:
+                print("Golden: ", batch.code)
+                print("Predict" ,greedy_decode(model, batch, max_len=10, start_pos=1))
 
 
 
