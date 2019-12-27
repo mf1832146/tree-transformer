@@ -72,7 +72,9 @@ class Solver:
 
         print('load training data finished')
         # optim = torch.optim.Adam(self.model.parameters(), lr=1e-4, betas=(0.9, 0.98), eps=1e-9)
-        optim = BertAdam(self.model.parameters(), lr=1e-4)
+        # optim = BertAdam(self.model.parameters(), lr=1e-4)
+        model_opt = NoamOpt(100, 1, 400,
+                            BertAdam(self.model.parameters(), lr=1e-4))
         criterion = LabelSmoothing(size=self.args.comment_vocab_size, padding_idx=0, smoothing=0.1)
         criterion = criterion.cuda()
         loss_compute = SimpleLossCompute(self.model.generator, criterion, optim)
@@ -143,7 +145,7 @@ def run_epoch(epoch, data_iter, model, loss_compute):
     for i, data_batch in enumerate(data_iter):
         code, par_matrix, bro_matrix, rel_par_ids, rel_bro_ids, comments = data_batch
         batch = Batch(code, par_matrix, bro_matrix, rel_par_ids, rel_bro_ids, comments)
-        # batch = data_batch
+        #batch = data_batch
         out, _, _, _ = model.forward(batch.code, batch.code_mask,
                                      batch.par_matrix, batch.bro_matrix,
                                      batch.re_par_ids, batch.re_bro_ids,
@@ -326,7 +328,7 @@ if __name__ == '__main__':
     V = 11
     criterion = LabelSmoothing(size=V, padding_idx=0, smoothing=0.0)
     model = make_model(V, V, 2)
-    model_opt = NoamOpt(512, 1, 400,
+    model_opt = NoamOpt(100, 1, 400,
         torch.optim.Adam(model.parameters(), lr=0, betas=(0.9, 0.98), eps=1e-9))
 
     for epoch in range(10):
